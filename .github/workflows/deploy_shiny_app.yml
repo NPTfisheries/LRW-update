@@ -112,9 +112,8 @@ jobs:
             appTitle = "Lostine River Weir - Chinook Summary",
             appFiles = c(
               "app.R",
-              "R/",                    # Deploy entire R directory
-              "www/",                  # Deploy entire www directory  
-              "data/TrappingData.csv",
+              "R/",
+              "www/",
               "data/yearly_estimates.csv"
             ),
             forceUpdate = TRUE,
