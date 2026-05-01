@@ -45,207 +45,207 @@ load_yearly_estimates <- function(year, path = NULL) {
 
 # Replace your get_trap_data function in report_helpers.R with this GitHub-only version:
 
-    get_trap_data <- function(trap.year = NULL) {
+get_trap_data <- function(trap.year = NULL) {
+  
+  # Initialize variables
+  data_timestamp <- NULL
+  
+  # Public GitHub URL - always use this
+  github_url <- "https://raw.githubusercontent.com/NPTfisheries/LRW-update/refs/heads/master/data/TrappingData.csv"
+  
+  message("Loading data from public GitHub repository...")
+  
+  # Load data directly from GitHub
+  fins_data <- read_csv(github_url, show_col_types = FALSE)
+  
+  # Get actual file timestamp from GitHub API (public access)
+  tryCatch({
+    if (requireNamespace("httr", quietly = TRUE)) {
+      library(httr)
       
-      # Initialize variables
-      data_timestamp <- NULL
+      # GitHub API for public repos - no auth needed
+      api_url <- "https://api.github.com/repos/NPTfisheries/LRW-update/commits?path=data/TrappingData.csv&per_page=1"
+      response <- GET(api_url)
       
-      # Public GitHub URL - always use this
-      github_url <- "https://raw.githubusercontent.com/NPTfisheries/LRW-update/refs/heads/master/data/TrappingData.csv"
-      
-      message("Loading data from public GitHub repository...")
-      
-      # Load data directly from GitHub
-      fins_data <- read_csv(github_url, show_col_types = FALSE)
-      
-      # Get actual file timestamp from GitHub API (public access)
-      tryCatch({
-        if (requireNamespace("httr", quietly = TRUE)) {
-          library(httr)
-          
-          # GitHub API for public repos - no auth needed
-          api_url <- "https://api.github.com/repos/NPTfisheries/LRW-update/commits?path=data/TrappingData.csv&per_page=1"
-          response <- GET(api_url)
-          
-          if (status_code(response) == 200) {
-            commits <- content(response, as = "parsed")
-            if (length(commits) > 0) {
-              commit_date <- commits[[1]]$commit$author$date
-              data_timestamp <- as.POSIXct(commit_date, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
-              # Convert to Pacific Time
-              data_timestamp <- as.POSIXct(format(data_timestamp, tz = "America/Los_Angeles"), tz = "America/Los_Angeles")
-              message("✅ Got actual file timestamp from GitHub: ", format(data_timestamp, "%Y-%m-%d %H:%M:%S"))
-            }
-          }
+      if (status_code(response) == 200) {
+        commits <- content(response, as = "parsed")
+        if (length(commits) > 0) {
+          commit_date <- commits[[1]]$commit$author$date
+          data_timestamp <- as.POSIXct(commit_date, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+          # Convert to Pacific Time
+          data_timestamp <- as.POSIXct(format(data_timestamp, tz = "America/Los_Angeles"), tz = "America/Los_Angeles")
+          message("✅ Got actual file timestamp from GitHub: ", format(data_timestamp, "%Y-%m-%d %H:%M:%S"))
         }
-      }, error = function(e) {
-        message("Could not get GitHub timestamp, using current time")
-        data_timestamp <- Sys.time()
-      })
-      
-      # Fallback to current time if API didn't work
-      if (is.null(data_timestamp)) {
-        data_timestamp <- Sys.time()
       }
-      
-      message("✅ Successfully loaded data from public GitHub repository")
-      
-      # Clean weir data
-      AdultWeirData_clean <- clean_weirData(fins_data) |>
-        mutate(
-          MonthDay = format(as.Date(trapped_date), "%m/%d"),
-          count = as.double(count)
-        )
-      
-      # Apply year filter if specified
-      if (!is.null(trap.year)) {
-        grsme_df <- AdultWeirData_clean |> filter(trap_year == !!trap.year)
-      } else {
-        grsme_df <- AdultWeirData_clean
-      }
-      
-      # Return data with timestamp and source info
-      list(
-        AdultWeirData_clean = AdultWeirData_clean,
-        grsme_df = grsme_df,
-        data_timestamp = data_timestamp,
-        data_source = "GitHub (public)"
-      )
     }
+  }, error = function(e) {
+    message("Could not get GitHub timestamp, using current time")
+    data_timestamp <- Sys.time()
+  })
+  
+  # Fallback to current time if API didn't work
+  if (is.null(data_timestamp)) {
+    data_timestamp <- Sys.time()
+  }
+  
+  message("✅ Successfully loaded data from public GitHub repository")
+  
+  # Clean weir data
+  AdultWeirData_clean <- clean_weirData(fins_data) |>
+    mutate(
+      MonthDay = format(as.Date(trapped_date), "%m/%d"),
+      count = as.double(count)
+    )
+  
+  # Apply year filter if specified
+  if (!is.null(trap.year)) {
+    grsme_df <- AdultWeirData_clean |> filter(trap_year == !!trap.year)
+  } else {
+    grsme_df <- AdultWeirData_clean
+  }
+  
+  # Return data with timestamp and source info
+  list(
+    AdultWeirData_clean = AdultWeirData_clean,
+    grsme_df = grsme_df,
+    data_timestamp = data_timestamp,
+    data_source = "GitHub (public)"
+  )
+}
 
 #--- OLD Load and Clean Weir Data with local backup----
 
-            # get_trap_data <- function(trap.year = NULL, use_github = TRUE) {
-            #   
-            #   # Initialize variables
-            #   fins_data <- NULL
-            #   data_timestamp <- NULL
-            #   data_source <- "Unknown"
-            #   
-            #   if (use_github) {
-            #     # Simple public GitHub URL - no authentication needed!
-            #     github_url <- "https://raw.githubusercontent.com/NPTfisheries/LRW-update/refs/heads/master/data/TrappingData.csv"
-            #     
-            #     tryCatch({
-            #       message("Loading data from public GitHub repository...")
-            #       
-            #       # Simple direct read - no authentication needed
-            #       fins_data <- read_csv(github_url, show_col_types = FALSE)
-            #       
-            #       # Get actual file timestamp from GitHub API (public access)
-            #       tryCatch({
-            #         if (requireNamespace("httr", quietly = TRUE)) {
-            #           library(httr)
-            #           
-            #           # GitHub API for public repos - no auth needed
-            #           api_url <- "https://api.github.com/repos/NPTfisheries/LRW-update/commits?path=data/TrappingData.csv&per_page=1"
-            #           response <- GET(api_url)
-            #           
-            #           if (status_code(response) == 200) {
-            #             commits <- content(response, as = "parsed")
-            #             if (length(commits) > 0) {
-            #               commit_date <- commits[[1]]$commit$author$date
-            #               data_timestamp <- as.POSIXct(commit_date, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
-            #               # Convert to Pacific Time
-            #               data_timestamp <- as.POSIXct(format(data_timestamp, tz = "America/Los_Angeles"), tz = "America/Los_Angeles")
-            #               message("✅ Got actual file timestamp from GitHub: ", format(data_timestamp, "%Y-%m-%d %H:%M:%S"))
-            #             }
-            #           }
-            #         }
-            #       }, error = function(e) {
-            #         message("Could not get GitHub timestamp, using current time")
-            #       })
-            #       
-            #       # Fallback to current time if API didn't work
-            #       if (is.null(data_timestamp)) {
-            #         data_timestamp <- Sys.time()
-            #       }
-            #       
-            #       data_source <- "GitHub (public)"
-            #       message("✅ Successfully loaded data from public GitHub repository")
-            #       
-            #     }, error = function(e) {
-            #       message("⚠️ GitHub load failed, trying local file...")
-            #       message("Error details: ", conditionMessage(e))
-            #       
-            #       # Fallback to local file
-            #       local_path <- if (basename(getwd()) == "documents") {
-            #         "../data/TrappingData.csv"
-            #       } else {
-            #         "data/TrappingData.csv"
-            #       }
-            #       
-            #       if (!file.exists(local_path)) {
-            #         stop("Neither GitHub data nor local TrappingData.csv found.")
-            #       }
-            #       
-            #       fins_data <<- read_csv(local_path, show_col_types = FALSE)
-            #       file_info <- file.info(local_path)
-            #       data_timestamp <<- file_info$mtime
-            #       data_source <<- "Local file"
-            #       message("📁 Using local fallback data")
-            #     })
-            #     
-            #   } else {
-            #     # Local file mode
-            #     local_path <- if (basename(getwd()) == "documents") {
-            #       "../data/TrappingData.csv"
-            #     } else {
-            #       "data/TrappingData.csv"
-            #     }
-            #     
-            #     if (!file.exists(local_path)) {
-            #       stop("TrappingData.csv not found locally.")
-            #     }
-            #     
-            #     fins_data <- read_csv(local_path, show_col_types = FALSE)
-            #     file_info <- file.info(local_path)
-            #     data_timestamp <- file_info$mtime
-            #     data_source <- "Local file"
-            #     message("📁 Using local data file")
-            #   }
-            #   
-            #   # Clean weir data (existing logic)
-            #   AdultWeirData_clean <- clean_weirData(fins_data) |>
-            #     mutate(
-            #       MonthDay = format(as.Date(trapped_date), "%m/%d"),
-            #       count = as.double(count)
-            #     )
-            #   
-            #   # Apply year filter if specified
-            #   if (!is.null(trap.year)) {
-            #     grsme_df <- AdultWeirData_clean |> filter(trap_year == !!trap.year)
-            #   } else {
-            #     grsme_df <- AdultWeirData_clean
-            #   }
-            #   
-            #   # Return enhanced data with timestamp and source info
-            #   list(
-            #     AdultWeirData_clean = AdultWeirData_clean,
-            #     grsme_df = grsme_df,
-            #     data_timestamp = data_timestamp,
-            #     data_source = data_source
-            #   )
-            # }
+# get_trap_data <- function(trap.year = NULL, use_github = TRUE) {
+#   
+#   # Initialize variables
+#   fins_data <- NULL
+#   data_timestamp <- NULL
+#   data_source <- "Unknown"
+#   
+#   if (use_github) {
+#     # Simple public GitHub URL - no authentication needed!
+#     github_url <- "https://raw.githubusercontent.com/NPTfisheries/LRW-update/refs/heads/master/data/TrappingData.csv"
+#     
+#     tryCatch({
+#       message("Loading data from public GitHub repository...")
+#       
+#       # Simple direct read - no authentication needed
+#       fins_data <- read_csv(github_url, show_col_types = FALSE)
+#       
+#       # Get actual file timestamp from GitHub API (public access)
+#       tryCatch({
+#         if (requireNamespace("httr", quietly = TRUE)) {
+#           library(httr)
+#           
+#           # GitHub API for public repos - no auth needed
+#           api_url <- "https://api.github.com/repos/NPTfisheries/LRW-update/commits?path=data/TrappingData.csv&per_page=1"
+#           response <- GET(api_url)
+#           
+#           if (status_code(response) == 200) {
+#             commits <- content(response, as = "parsed")
+#             if (length(commits) > 0) {
+#               commit_date <- commits[[1]]$commit$author$date
+#               data_timestamp <- as.POSIXct(commit_date, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+#               # Convert to Pacific Time
+#               data_timestamp <- as.POSIXct(format(data_timestamp, tz = "America/Los_Angeles"), tz = "America/Los_Angeles")
+#               message("✅ Got actual file timestamp from GitHub: ", format(data_timestamp, "%Y-%m-%d %H:%M:%S"))
+#             }
+#           }
+#         }
+#       }, error = function(e) {
+#         message("Could not get GitHub timestamp, using current time")
+#       })
+#       
+#       # Fallback to current time if API didn't work
+#       if (is.null(data_timestamp)) {
+#         data_timestamp <- Sys.time()
+#       }
+#       
+#       data_source <- "GitHub (public)"
+#       message("✅ Successfully loaded data from public GitHub repository")
+#       
+#     }, error = function(e) {
+#       message("⚠️ GitHub load failed, trying local file...")
+#       message("Error details: ", conditionMessage(e))
+#       
+#       # Fallback to local file
+#       local_path <- if (basename(getwd()) == "documents") {
+#         "../data/TrappingData.csv"
+#       } else {
+#         "data/TrappingData.csv"
+#       }
+#       
+#       if (!file.exists(local_path)) {
+#         stop("Neither GitHub data nor local TrappingData.csv found.")
+#       }
+#       
+#       fins_data <<- read_csv(local_path, show_col_types = FALSE)
+#       file_info <- file.info(local_path)
+#       data_timestamp <<- file_info$mtime
+#       data_source <<- "Local file"
+#       message("📁 Using local fallback data")
+#     })
+#     
+#   } else {
+#     # Local file mode
+#     local_path <- if (basename(getwd()) == "documents") {
+#       "../data/TrappingData.csv"
+#     } else {
+#       "data/TrappingData.csv"
+#     }
+#     
+#     if (!file.exists(local_path)) {
+#       stop("TrappingData.csv not found locally.")
+#     }
+#     
+#     fins_data <- read_csv(local_path, show_col_types = FALSE)
+#     file_info <- file.info(local_path)
+#     data_timestamp <- file_info$mtime
+#     data_source <- "Local file"
+#     message("📁 Using local data file")
+#   }
+#   
+#   # Clean weir data (existing logic)
+#   AdultWeirData_clean <- clean_weirData(fins_data) |>
+#     mutate(
+#       MonthDay = format(as.Date(trapped_date), "%m/%d"),
+#       count = as.double(count)
+#     )
+#   
+#   # Apply year filter if specified
+#   if (!is.null(trap.year)) {
+#     grsme_df <- AdultWeirData_clean |> filter(trap_year == !!trap.year)
+#   } else {
+#     grsme_df <- AdultWeirData_clean
+#   }
+#   
+#   # Return enhanced data with timestamp and source info
+#   list(
+#     AdultWeirData_clean = AdultWeirData_clean,
+#     grsme_df = grsme_df,
+#     data_timestamp = data_timestamp,
+#     data_source = data_source
+#   )
+# }
 
 # # ---- Make Trap Date ----
 
 make_trap_date <- function(month_day, year) {
   # Improved error handling for date parsing
   result <- suppressWarnings(ymd(paste(year, month_day, sep = "-")))
-
+  
   # Handle cases where date parsing fails
   if (any(is.na(result))) {
     # Try parsing with different separator
     result <- suppressWarnings(ymd(paste(year, gsub("/", "-", month_day), sep = "-")))
   }
-
+  
   return(result)
 }
 
-    # make_trap_date <- function(month_day, year) {
-    #   ymd(paste(year, month_day, sep = "-"))
-    # }
+# make_trap_date <- function(month_day, year) {
+#   ymd(paste(year, month_day, sep = "-"))
+# }
 
 #---- Extract Broodstock Summary Numbers (Updated with Jacks) ----
 extract_broodstock_summary <- function(broodstock_data) {
@@ -406,7 +406,7 @@ calculate_dispositions <- function(data, trap_year) {
 # ---- Plot Data Prep Function Prepare Mega DF ----
 
 prepare_megadf <- function(trap.year, grsme_df, weir_data_clean) {
- 
+  
   # ---- Flow Data: Current Year ----
   start_date <- paste0(trap.year, "-05-15") #changed trap_year to trap.year
   end_date <- paste0(trap.year, "-09-30") #changed trap_year to trap.year
@@ -436,7 +436,7 @@ prepare_megadf <- function(trap.year, grsme_df, weir_data_clean) {
     "&end_date=", end_date_h, "%2012:00:00%20AM",
     "&dataset=MDF&format=csv"
   )
-
+  
   
   flow_df_h <- read.delim(req_url2, sep = "\t") |>
     mutate(
@@ -477,7 +477,7 @@ prepare_megadf <- function(trap.year, grsme_df, weir_data_clean) {
   #       ymd(paste0(trap.year, "-09-21"))
   #     )
   #   )
-
+  
   
   lrw_catch <- grsme_df |>
     filter(
@@ -597,7 +597,7 @@ generate_lrw_megaplot <- function(megadf,
       breaks = scales::breaks_pretty(7),
       expand = c(0.001, 0.001)
     ) +
-    scale_fill_manual(values = c("Natural" = "#FDE735FF", "Hatchery" = "#482677FF")) +
+    scale_fill_manual(values = c("Natural" = "#FDE735FF", "Hatchery" = "#482677FF"), na.translate = FALSE) +
     facet_grid(rows = vars(facet)) +
     guides(color = "none") +  # Fixed: Changed from FALSE to "none"
     theme_bw() +
