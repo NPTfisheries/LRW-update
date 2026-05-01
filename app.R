@@ -30,41 +30,41 @@ ui <- dashboardPage(
         p("Last Data Update:", style = "font-size: 12px; color: gray; margin-bottom: 5px;"),
         textOutput("last_update", inline = TRUE)
     ),
+    
+    br(), br(),
+    
+    # Contact Information Section
+    div(style = "margin: 20px 10px; padding: 15px; background-color: rgba(255,255,255,0.1); border-radius: 5px;",
+        h5("Contact Information", style = "color: white; text-align: center; margin-bottom: 15px; font-weight: bold;"),
+        
+        div(style = "color: white; font-size: 11px; line-height: 1.4; margin-bottom: 15px;",
+            p(strong("Neal Espinosa"), style = "margin: 0; font-size: 12px;"),
+            p("Northeast Oregon Natural and Hatchery Salmonid Monitoring", style = "margin: 2px 0;"),
+            p("Biologist II", style = "margin: 2px 0;"),
+            p("541-432-2502", style = "margin: 2px 0;"),
+            p(a("neale@nezperce.org", href = "mailto:neale@nezperce.org", 
+                style = "color: #87CEEB; text-decoration: none;"), style = "margin: 2px 0;")
+        ),
+        
+        div(style = "color: white; font-size: 11px; line-height: 1.4; margin-bottom: 15px;",
+            p(strong("Brian Simmons"), style = "margin: 0; font-size: 12px;"),
+            p("Northeast Oregon Natural and Hatchery Salmonid Monitoring", style = "margin: 2px 0;"),
+            p("Project Leader", style = "margin: 2px 0;"),
+            p("541-432-2515", style = "margin: 2px 0;"),
+            p(a("brians@nezperce.org", href = "mailto:brians@nezperce.org", 
+                style = "color: #87CEEB; text-decoration: none;"), style = "margin: 2px 0;")
+        ),
+        
+        div(style = "color: white; font-size: 11px; line-height: 1.4; text-align: center; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 10px;",
+            p(strong("Nez Perce Tribe"), style = "margin: 2px 0; font-size: 12px;"),
+            p("Joseph Field Office", style = "margin: 2px 0;"),
+            p("500 North Main Street", style = "margin: 2px 0;"),
+            p("P.O. Box 909", style = "margin: 2px 0;"),
+            p("Joseph, OR 97846", style = "margin: 2px 0;")
+        )
+    )
+  ),
   
-  br(), br(),
-  
-  # Contact Information Section
-  div(style = "margin: 20px 10px; padding: 15px; background-color: rgba(255,255,255,0.1); border-radius: 5px;",
-      h5("Contact Information", style = "color: white; text-align: center; margin-bottom: 15px; font-weight: bold;"),
-      
-      div(style = "color: white; font-size: 11px; line-height: 1.4; margin-bottom: 15px;",
-          p(strong("Neal Espinosa"), style = "margin: 0; font-size: 12px;"),
-          p("Northeast Oregon Natural and Hatchery Salmonid Monitoring", style = "margin: 2px 0;"),
-          p("Biologist II", style = "margin: 2px 0;"),
-          p("541-432-2502", style = "margin: 2px 0;"),
-          p(a("neale@nezperce.org", href = "mailto:neale@nezperce.org", 
-              style = "color: #87CEEB; text-decoration: none;"), style = "margin: 2px 0;")
-      ),
-      
-      div(style = "color: white; font-size: 11px; line-height: 1.4; margin-bottom: 15px;",
-          p(strong("Brian Simmons"), style = "margin: 0; font-size: 12px;"),
-          p("Northeast Oregon Natural and Hatchery Salmonid Monitoring", style = "margin: 2px 0;"),
-          p("Project Leader", style = "margin: 2px 0;"),
-          p("541-432-2515", style = "margin: 2px 0;"),
-          p(a("brians@nezperce.org", href = "mailto:brians@nezperce.org", 
-              style = "color: #87CEEB; text-decoration: none;"), style = "margin: 2px 0;")
-      ),
-      
-      div(style = "color: white; font-size: 11px; line-height: 1.4; text-align: center; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 10px;",
-          p(strong("Nez Perce Tribe"), style = "margin: 2px 0; font-size: 12px;"),
-          p("Joseph Field Office", style = "margin: 2px 0;"),
-          p("500 North Main Street", style = "margin: 2px 0;"),
-          p("P.O. Box 909", style = "margin: 2px 0;"),
-          p("Joseph, OR 97846", style = "margin: 2px 0;")
-      )
-  )
-),
-
   dashboardBody(
     # Enhanced CSS to match PDF styling
     tags$head(
@@ -432,8 +432,21 @@ server <- function(input, output, session) {
       save_plot = FALSE
     )
     
-    ggplotly(plot, tooltip = c("x", "y")) |>
+    p <- ggplotly(plot, tooltip = c("x", "y")) |>
       layout(showlegend = TRUE)
+    
+    # Clean up legend trace names — ggplotly combines fill + color aesthetics
+    # into "(value,color)" format (e.g. "(Hatchery,black)"). This loop renames
+    # them to plain labels and hides any NA traces from the legend entirely.
+    for (i in seq_along(p$x$data)) {
+      name <- p$x$data[[i]]$name
+      if (grepl("Hatchery", name, fixed = TRUE))       p$x$data[[i]]$name <- "Hatchery"
+      else if (grepl("Natural", name, fixed = TRUE))   p$x$data[[i]]$name <- "Natural"
+      else if (grepl("Discharge", name, fixed = TRUE)) p$x$data[[i]]$name <- "Discharge"
+      else if (grepl("NA", name, fixed = TRUE))        p$x$data[[i]]$showlegend <- FALSE
+    }
+    
+    p
   })
   
 }

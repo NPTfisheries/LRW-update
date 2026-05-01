@@ -597,7 +597,7 @@ generate_lrw_megaplot <- function(megadf,
       breaks = scales::breaks_pretty(7),
       expand = c(0.001, 0.001)
     ) +
-    scale_fill_manual(values = c("Natural" = "#FDE735FF", "Hatchery" = "#482677FF"), na.translate = FALSE) +
+    scale_fill_manual(values = c("Natural" = "#FDE735FF", "Hatchery" = "#482677FF")) +
     facet_grid(rows = vars(facet)) +
     guides(color = "none") +  # Fixed: Changed from FALSE to "none"
     theme_bw() +
