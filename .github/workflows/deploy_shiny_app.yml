@@ -99,7 +99,6 @@ jobs:
       
       - name: Deploy Shiny App
         run: |
-          # Set up rsconnect credentials
           library(rsconnect)
           rsconnect::setAccountInfo(
             name = Sys.getenv("SHINYAPPS_NAME"),
@@ -107,19 +106,38 @@ jobs:
             secret = Sys.getenv("SHINYAPPS_SECRET")
           )
           
-          # Deploy with directory-based deployment (FIXED)
-          rsconnect::deployApp(
-            appName = "LRW-Chinook-Summary",
-            appTitle = "Lostine River Weir - Chinook Summary",
-            appFiles = c(
-              "app.R",
-              "R/",
-              "www/",
-              "data/yearly_estimates.csv"
-            ),
-            forceUpdate = TRUE,
-            launch.browser = FALSE
-          )
+          # Retry loop to handle transient 409 conflicts
+          max_attempts <- 3
+          attempt <- 1
+          deployed <- FALSE
+          
+          while (attempt <= max_attempts && !deployed) {
+            cat("🚀 Deployment attempt", attempt, "of", max_attempts, "\n")
+            tryCatch({
+              rsconnect::deployApp(
+                appName = "LRW-Chinook-Summary",
+                appTitle = "Lostine River Weir - Chinook Summary",
+                appFiles = c(
+                  "app.R",
+                  "R/",
+                  "www/",
+                  "data/yearly_estimates.csv"
+                ),
+                forceUpdate = TRUE,
+                launch.browser = FALSE
+              )
+              deployed <- TRUE
+            }, error = function(e) {
+              cat("⚠️ Attempt", attempt, "failed:", conditionMessage(e), "\n")
+              if (attempt < max_attempts) {
+                cat("⏳ Waiting 90 seconds before retrying...\n")
+                Sys.sleep(90)
+              }
+              attempt <<- attempt + 1
+            })
+          }
+          
+          if (!deployed) stop("❌ All deployment attempts failed.")
           
           deployment_time <- format(Sys.time(), tz = "America/Los_Angeles")
           cat("✅ App deployed successfully at:", deployment_time, "PT\n")
