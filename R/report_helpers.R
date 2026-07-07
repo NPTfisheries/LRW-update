@@ -569,14 +569,30 @@ generate_lrw_megaplot <- function(megadf,
   # ---- Create Plot ---
   p <- ggplot(megadf, aes(x = trapped_date)) +
     geom_bar(
-      aes(y = Catch, fill = origin),
+      aes(y = Catch, fill = origin,
+          text = ifelse(
+            is.na(Catch) | is.na(origin),
+            NA_character_,
+            paste0(
+              format(trapped_date, "%Y-%m-%d"), "<br>",
+              origin, ": ", round(Catch, 1), " fish"
+            )
+          )),
       color = "black",
       stat = "identity",
       position = "stack",
       width = 1
     ) +
     geom_line(
-      aes(y = MeanDailyFlow * scale_factor, linetype = "Discharge"),
+      aes(y = MeanDailyFlow * scale_factor, linetype = "Discharge", group = 1,
+          text = ifelse(
+            is.na(MeanDailyFlow),
+            NA_character_,
+            paste0(
+              format(trapped_date, "%Y-%m-%d"), "<br>",
+              "Mean Daily Flow at LSTO3: ", round(MeanDailyFlow, 0), " cfs"
+            )
+          )),
       color = "blue",
       linewidth = 1  # Fixed: Changed from size = 1 to linewidth = 1
     ) +

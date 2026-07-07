@@ -252,11 +252,18 @@ ui <- dashboardPage(
                          h4("🌊 Real-Time River Data"),
                          p("Current gauge shows both observed flow data and official 7-day forecasts for the Lostine River above Lostine (NWSLI: LSTO3)."),
                          br(),
-                         actionButton("noaa_link", "View Live NOAA Gauge Data & Forecast", 
+                         actionButton("noaa_link", "View Live Flow Data & Forecast - Lostine River above Lostine (LSTO3)", 
                                       onclick = "window.open('https://water.noaa.gov/gauges/lsto3', '_blank')",
                                       class = "btn-primary btn-lg"),
                          br(), br(),
                          p("Click above for interactive graphs, current readings, and flood predictions", 
+                           style = "font-style: italic; color: gray;"),
+                         br(),
+                         actionButton("noaa_link_lsro3", "View Live Flow Data - Lostine River at Baker Road (LSRO3)", 
+                                      onclick = "window.open('https://www.nwrfc.noaa.gov/river/station/flowplot/flowplot.cgi?LSRO3', '_blank')",
+                                      class = "btn-primary btn-lg"),
+                         br(), br(),
+                         p("Real-time discharge data from the NOAA Northwest River Forecast Center", 
                            style = "font-style: italic; color: gray;")
                      )
                  )
@@ -432,7 +439,7 @@ server <- function(input, output, session) {
       save_plot = FALSE
     )
     
-    p <- ggplotly(plot, tooltip = c("x", "y")) |>
+    p <- ggplotly(plot, tooltip = "text") |>
       layout(showlegend = TRUE)
     
     # Clean up legend trace names — ggplotly combines fill + color aesthetics
