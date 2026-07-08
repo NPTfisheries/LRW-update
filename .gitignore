@@ -20,6 +20,7 @@ _cache/        # Quarto render cache
 # ────────────────────────────────────────────────
 *.csv
 !data/TrappingData.csv
+!data/brood_schedule.csv
 
 # ────────────────────────────────────────────────
 # Logs, temp, or build folders (add here if needed)

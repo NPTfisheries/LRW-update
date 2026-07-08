@@ -13,14 +13,16 @@ library(stringr)
 # Determine correct paths based on working directory
 if (basename(getwd()) == "documents") {
   # Running from documents/ folder (Quarto)
-  source("../R/local_cuyem_functions.R")  # Local cuyem functions
-  source("../R/sumGRSMEdisp.R")           # FINS Disposition Summary
-  source("../R/sumGRSMEbrood.R")          # Brood Collection Summary
+  source("../R/local_cuyem_functions.R")        # Local cuyem functions
+  source("../R/sumGRSMEdisp.R")                 # FINS Disposition Summary
+  source("../R/sumGRSMEbrood.R")                # Brood Collection Summary
+  source("../R/weekly_broodstock_progress.R")   # Broodstock Progress Table
 } else {
   # Running from root directory (Shiny app)
-  source("R/local_cuyem_functions.R")     # Local cuyem functions
-  source("R/sumGRSMEdisp.R")              # FINS Disposition Summary
-  source("R/sumGRSMEbrood.R")             # Brood Collection Summary
+  source("R/local_cuyem_functions.R")           # Local cuyem functions
+  source("R/sumGRSMEdisp.R")                    # FINS Disposition Summary
+  source("R/sumGRSMEbrood.R")                   # Brood Collection Summary
+  source("R/weekly_broodstock_progress.R")   # Broodstock Progress Table
 }
 
 # ---- Load Yearly Estimates ----
@@ -668,6 +670,18 @@ prepare_caption_table3 <- function(trap_year) {
     "Return year ", trap_year, " weekly summary of captured adult Chinook Salmon and Bull Trout, ",
     "excluding recaptures. Broodstock collection for Chinook Salmon is shown in parentheses. ",
     "*Asterisk indicates an incomplete week."
+  )
+}
+
+prepare_caption_weekly_broodstock <- function(trap_year) {
+  paste0(
+    "Return year ", trap_year, " weekly broodstock collection goals and progress for natural- ",
+    "and hatchery-origin adult Chinook Salmon, by sex (jacks excluded). ",
+    "\u201cWeekly Goal\u201d is the planned number of fish to collect that week; \u201cCollected\u201d is the ",
+    "number actually collected that week. \u201cSeason Progress\u201d compares fish collected to date ",
+    "against the goal to date for the same period (collected of goal), and is left blank for ",
+    "weeks that have not yet occurred. The current week is highlighted. Any broodstock collected ",
+    "before the schedule's first week are shown in the \u201cBefore\u201d row, with a goal of 0."
   )
 }
 

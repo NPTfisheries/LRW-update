@@ -121,7 +121,8 @@ jobs:
                   "app.R",
                   "R/",
                   "www/",
-                  "data/yearly_estimates.csv"
+                  "data/yearly_estimates.csv",
+                  "data/brood_schedule.csv"
                 ),
                 forceUpdate = TRUE,
                 launch.browser = FALSE

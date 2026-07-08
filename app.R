@@ -10,6 +10,7 @@ library(ggplot2)
 library(flextable)
 library(htmltools)
 library(lubridate)
+library(tidyr)
 
 # Source your helper functions
 source("R/report_helpers.R")
@@ -214,13 +215,28 @@ ui <- dashboardPage(
       # Enhanced Broodstock table with Caption
       column(12,
              div(class = "table-box",
-                 box(width = 12, title = "Broodstock Collection Summary", 
+                 box(width = 12, title = "Weekly Trapping & Broodstock Collection Summary", 
                      status = "info", solidHeader = TRUE,
                      # Add caption above table
                      div(style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #5bc0de; font-size: 12px; font-style: italic;",
                          textOutput("caption_table3")
                      ),
                      htmlOutput("broodstock_table")
+                 )
+             )
+      )
+    ),
+    
+    fluidRow(
+      # Broodstock Progress table
+      column(12,
+             div(class = "table-box",
+                 box(width = 12, title = "Weekly Broodstock Collection Progress",
+                     status = "info", solidHeader = TRUE,
+                     div(style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #5bc0de; font-size: 12px; font-style: italic;",
+                         textOutput("caption_weekly_broodstock")
+                     ),
+                     DT::DTOutput("weekly_broodstock_table")
                  )
              )
       )
@@ -371,6 +387,10 @@ server <- function(input, output, session) {
     prepare_caption_table3(current_year)
   })
   
+  output$caption_weekly_broodstock <- renderText({
+    prepare_caption_weekly_broodstock(current_year)
+  })
+  
   output$caption_plot <- renderText({
     prepare_caption_plot(current_year)
   })
@@ -429,6 +449,11 @@ server <- function(input, output, session) {
   
   output$broodstock_table <- renderUI({
     create_safe_table(broodstock_data, "broodstock", current_year)
+  })
+  
+  output$weekly_broodstock_table <- DT::renderDT({
+    built <- build_weekly_broodstock_progress(grsme_df, current_year)
+    render_weekly_broodstock_dt(built)
   })
   
   # Main plot (non-reactive)

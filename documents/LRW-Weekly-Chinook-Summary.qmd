@@ -209,12 +209,12 @@ include_graphics(path = "../www/npt_joseph.png")
 
 ### Forecasts, Goals, and Disposition Summary
 
--   `r estimate_type` adult return-to-tributary estimates were updated on `r estimate_date` to `r nat_adults` natural-origin and `r hat_adults` hatchery-origin adults.
--   **Adult summer Chinook Salmon trapped to date: `r total_adults` total (`r n_adults` natural-origin adults, `r h_adults` hatchery-origin adults).**
--   Brood stock collection goals: `r total_brood_goal` total (`r n_brood_goal` natural-origin adults, `r h_brood_goal` hatchery-origin adults, `r hj_brood_goal` hatchery-origin jacks).
--   **Brood stock collected to date: `r total_brood_sum` of `r total_brood_goal` total (`r n_brood_sum` natural-origin adults, `r h_brood_sum` hatchery-origin adults, `r hj_brood_sum` hatchery-origin jacks).**
--   Composition of adults passed upstream: `r h_upstream_calc`% Hatchery (Sliding scale goal $\leq$ `r ss_upstream`)
--   Composition of adults kept for brood: `r n_brood_calc`% Natural (Sliding scale goal $\geq$ `r ss_brood`)
+- `r estimate_type` adult return-to-tributary estimates were updated on `r estimate_date` to `r nat_adults` natural-origin and `r hat_adults` hatchery-origin adults.
+- **Adult summer Chinook Salmon trapped to date: `r total_adults` total (`r n_adults` natural-origin adults, `r h_adults` hatchery-origin adults).**
+- Brood stock collection goals: `r total_brood_goal` total (`r n_brood_goal` natural-origin adults, `r h_brood_goal` hatchery-origin adults, `r hj_brood_goal` hatchery-origin jacks).
+- **Brood stock collected to date: `r total_brood_sum` of `r total_brood_goal` total (`r n_brood_sum` natural-origin adults, `r h_brood_sum` hatchery-origin adults, `r hj_brood_sum` hatchery-origin jacks).**
+- Composition of adults passed upstream: `r h_upstream_calc`% Hatchery (Sliding scale goal $\leq$ `r ss_upstream`)
+- Composition of adults kept for brood: `r n_brood_calc`% Natural (Sliding scale goal $\geq$ `r ss_brood`)
 
 **Table 1.** `r prepare_caption_table1(trap.year)`
 
@@ -249,6 +249,13 @@ safe_flextable(n_df, trap.year, "natural")
 
 safe_flextable(table_3, trap.year, "broodstock")
 
+```
+
+```{r}
+#| label: table3b-weekly-broodstock-progress
+#| echo: false
+weekly_progress <- build_weekly_broodstock_progress(grsme_df, trap.year)
+render_weekly_broodstock_flextable(weekly_progress)
 ```
 
 ### Lostine River Weir Current and Historic Catch and River Flows
