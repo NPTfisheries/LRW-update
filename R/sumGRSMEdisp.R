@@ -34,10 +34,23 @@ sumGRSMEdisp <- function(data, origin_, trap.year) {
           disposition == 'Released' & str_detect(moved_to, 'Wallowa River') & purpose == 'Outplant' ~ 'Wallowa River Outplant',
           disposition == 'Released' & moved_to %in% c('Lostine River: Above Weir', 'Lostine River: Acclimation Facility') ~ 'Upstream Release',
           disposition %in% c('Ponded', 'Transferred') ~ 'Brood Collection',
-          disposition == 'Disposed' ~ 'Food Distribution'
+          disposition == 'Disposed' ~ 'Food Distribution',
+          disposition == 'Shipped' & moved_to == 'Wallowa Fish Hatchery' ~ 'Food Distribution'
         )) %>%
       group_by(Disposition, Class, origin) %>%
       summarize(Count = sum(count), .groups = "drop")  # Fixed: Added .groups = "drop"
+    
+    # Warn if any records fall through every Disposition rule above —
+    # these will otherwise show up as an unlabeled row in the table and can
+    # silently zero out downstream summary counts (see
+    # calculate_adult_captures_from_disposition in report_helpers.R)
+    n_unclassified <- sum(is.na(disp_summary$Disposition))
+    if (n_unclassified > 0) {
+      warning(sprintf(
+        "sumGRSMEdisp(): %d Chinook record(s) for trap year %s have an unclassified Disposition (check disposition/moved_to/living_status/purpose values) and will appear as an unlabeled row.",
+        n_unclassified, trap.year
+      ))
+    }
     
     disposition_list <- c('Upstream Release', 'Brood Collection', 'Food Distribution', 'Wallowa River Outplant', 'Recycled to Fishery', 'Mortality')
     

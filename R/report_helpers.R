@@ -337,8 +337,8 @@ calculate_adult_captures_from_disposition <- function(data, trap_year) {
   n_df <- sumGRSMEdisp(data = data, origin_ = "Natural", trap.year = trap_year)
   
   # Extract the "Total [>630]" column from the "Total" row (excluding recaps - numbers in parentheses)
-  h_total_row <- h_df[nrow(h_df), "Total [>630]"]
-  n_total_row <- n_df[nrow(n_df), "Total [>630]"]
+  h_total_row <- h_df[h_df$Disposition == "Total", "Total [>630]"]
+  n_total_row <- n_df[n_df$Disposition == "Total", "Total [>630]"]
   
   # Extract numbers in parentheses (these exclude recaptures)
   h_adults <- as.numeric(str_extract(h_total_row, "(?<=\\()\\d+(?=\\))"))
