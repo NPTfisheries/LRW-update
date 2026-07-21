@@ -563,8 +563,12 @@ generate_lrw_megaplot <- function(megadf,
   }
   
   # ---- Scale Factor for Dual Axis ---
+  # 5% headroom above the actual max flow, mirroring the "+2" padding
+  # already applied to plot_max above, so the discharge line never
+  # touches the top edge of the panel.
+  max_flow <- max(megadf$MeanDailyFlow, na.rm = TRUE)
   scale_factor <- round(
-    max(megadf$Catch, na.rm = TRUE) / max(megadf$MeanDailyFlow, na.rm = TRUE),
+    plot_max / (max_flow * 1.05),
     3
   )
   
@@ -616,7 +620,7 @@ generate_lrw_megaplot <- function(megadf,
       expand = c(0.001, 0.001)
     ) +
     scale_fill_manual(values = c("Natural" = "#FDE735FF", "Hatchery" = "#482677FF")) +
-    facet_grid(rows = vars(facet)) +
+    facet_wrap(vars(facet), ncol = 1, strip.position = "top") +
     guides(color = "none") +  # Fixed: Changed from FALSE to "none"
     theme_bw() +
     theme(
@@ -626,11 +630,13 @@ generate_lrw_megaplot <- function(megadf,
       axis.text.y.left = element_text(size = 14),
       axis.title.y.right = element_text(color = "blue", size = 16),
       axis.text.y.right = element_text(color = "blue", size = 14),
-      legend.position = "top",
+      legend.position = "bottom",
       legend.title = element_blank(),
       legend.box.background = element_blank(),
       panel.grid.minor = element_blank(),
-      panel.spacing = unit(2, "lines")
+      panel.spacing = unit(2, "lines"),
+      strip.background = element_rect(fill = "grey85", color = NA),
+      strip.text = element_text(size = 14, face = "bold")
     )
   
   # ---- Optionally Save Plot ---
@@ -646,6 +652,8 @@ generate_lrw_megaplot <- function(megadf,
   }
   
   # ---- Return Plot Object ---
+  attr(p, "scale_factor") <- scale_factor
+  attr(p, "plot_max") <- plot_max
   return(p)
 }
 

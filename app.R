@@ -499,8 +499,11 @@ server <- function(input, output, session) {
       save_plot = FALSE
     )
     
+    scale_factor <- attr(plot, "scale_factor")
+    plot_max <- attr(plot, "plot_max")
+    
     p <- ggplotly(plot, tooltip = "text") |>
-      layout(showlegend = TRUE)
+      layout(showlegend = TRUE, margin = list(r = 90))
     
     # Clean up legend trace names — ggplotly combines fill + color aesthetics
     # into "(value,color)" format (e.g. "(Hatchery,black)"). This loop renames
@@ -512,6 +515,60 @@ server <- function(input, output, session) {
       else if (grepl("Discharge", name, fixed = TRUE)) p$x$data[[i]]$name <- "Discharge"
       else if (grepl("NA", name, fixed = TRUE))        p$x$data[[i]]$showlegend <- FALSE
     }
+    
+    # ---- Rebuild the discharge secondary axis (ggplotly drops sec_axis()) ----
+    y_axis_names <- grep("^yaxis[0-9]*$", names(p$x$layout), value = TRUE)
+    n_axes <- length(y_axis_names)
+    
+    primary_range <- c(0, plot_max)                  # known-true bound, not read from plotly
+    cfs_range     <- primary_range / scale_factor
+    cfs_breaks    <- scales::breaks_pretty(6)(cfs_range)
+    cfs_breaks    <- cfs_breaks[cfs_breaks >= 0]
+    
+    for (idx in seq_along(y_axis_names)) {
+      y_name   <- y_axis_names[idx]
+      orig_ref <- if (y_name == "yaxis") "y" else sub("^yaxis", "y", y_name)
+      
+      # Force the primary axis to the known bound too — don't trust whatever
+      # ggplotly left it at after Discharge is detached from it.
+      p$x$layout[[y_name]]$range <- primary_range
+      p$x$layout[[y_name]]$autorange <- FALSE
+      
+      sec_name <- paste0("yaxis", n_axes + idx)
+      sec_ref  <- paste0("y", n_axes + idx)
+      
+      p$x$layout[[sec_name]] <- list(
+        overlaying = orig_ref,
+        side = "right",
+        range = primary_range,
+        tickvals = cfs_breaks * scale_factor,
+        ticktext = format(cfs_breaks, big.mark = ","),
+        tickfont = list(color = "blue"),
+        showgrid = FALSE
+      )
+      
+      for (i in seq_along(p$x$data)) {
+        trace_ref <- p$x$data[[i]]$yaxis
+        if (is.null(trace_ref)) trace_ref <- "y"
+        if (identical(p$x$data[[i]]$name, "Discharge") && identical(trace_ref, orig_ref)) {
+          p$x$data[[i]]$yaxis <- sec_ref
+        }
+      }
+    }
+    
+    # Single shared "Discharge (cfs)" title, spanning both panels — mirrors
+    # how the left-hand "Number of Chinook Adults" title is drawn once.
+    p$x$layout$annotations <- c(
+      p$x$layout$annotations,
+      list(list(
+        text = "Discharge (cfs)",
+        font = list(color = "blue", size = 16),
+        x = 1, xref = "paper", xanchor = "left", xshift = 55,
+        y = 0.5, yref = "paper", yanchor = "middle",
+        textangle = 90,
+        showarrow = FALSE
+      ))
+    )
     
     p
   })
