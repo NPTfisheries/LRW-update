@@ -26,13 +26,9 @@ library(htmltools)
 # Sunday.
 
 load_brood_schedule <- function(trap.year, path = NULL) {
-  
+
   if (is.null(path)) {
-    path <- if (basename(getwd()) == "documents") {
-      "../data/brood_schedule.csv"
-    } else {
-      "data/brood_schedule.csv"
-    }
+    path <- "data/brood_schedule.csv"
   }
   
   schedule <- read_csv(path, show_col_types = FALSE) |>
@@ -273,58 +269,6 @@ format_weekly_broodstock_display <- function(df) {
       hor_m_progress = if_else(is_future_week, "-",
                                paste0(male_ho_actual_cum, " of ", male_ho_goal_cum))
     )
-}
-
-# ---- Quarto / PDF renderer (flextable) ----
-
-render_weekly_broodstock_flextable <- function(built) {
-  
-  if (is.null(built)) {
-    return(
-      flextable(data.frame(Message = "No weekly broodstock schedule available.")) |>
-        delete_part(part = "header") |>
-        align(align = "center", part = "all") |>
-        italic(part = "all") |>
-        set_table_properties(layout = "autofit", width = 0.95)
-    )
-  }
-  
-  display <- format_weekly_broodstock_display(built$weekly)
-  total_row <- format_weekly_broodstock_display(
-    built$totals |> mutate(week_display = "Season Total")
-  )
-  display_full <- bind_rows(display, total_row)
-  
-  current_idx <- which(built$weekly$is_current_week)
-  
-  ft <- flextable(
-    display_full,
-    cwidth = c(1.5, rep(c(0.8, 0.8, 1.15), 4))
-  ) |>
-    set_header_labels(
-      Week = "Week",
-      nor_f_goal = "Weekly Goal", nor_f_actual = "Collected", nor_f_progress = "Season Progress",
-      hor_f_goal = "Weekly Goal", hor_f_actual = "Collected", hor_f_progress = "Season Progress",
-      nor_m_goal = "Weekly Goal", nor_m_actual = "Collected", nor_m_progress = "Season Progress",
-      hor_m_goal = "Weekly Goal", hor_m_actual = "Collected", hor_m_progress = "Season Progress"
-    ) |>
-    add_header_row(
-      top = TRUE,
-      values = c("", "Natural Females", "Hatchery Females", "Natural Males", "Hatchery Males"),
-      colwidths = c(1, 3, 3, 3, 3)
-    ) |>
-    align(align = "center", part = "header") |>
-    align(j = 2:13, align = "center", part = "body") |>
-    vline(j = c(1, 4, 7, 10), part = "all") |>
-    hline(i = nrow(display_full) - 1) |>
-    bold(i = nrow(display_full)) |>
-    set_table_properties(layout = "autofit", width = 0.95)
-  
-  if (length(current_idx) > 0) {
-    ft <- ft |> bg(i = current_idx, bg = "#d4f7d4")
-  }
-  
-  ft
 }
 
 # ---- Shiny renderer (DT) ----

@@ -5,37 +5,19 @@ library(dplyr)
 library(lubridate)
 library(tidyr)
 library(ggplot2)
-library(flextable)
 # library(cuyem)  # REMOVED - using local functions instead
 library(stringr)
 
 # ---- Source local cuyem functions and other dependencies ----
-# Determine correct paths based on working directory
-if (basename(getwd()) == "documents") {
-  # Running from documents/ folder (Quarto)
-  source("../R/local_cuyem_functions.R")        # Local cuyem functions
-  source("../R/sumGRSMEdisp.R")                 # FINS Disposition Summary
-  source("../R/sumGRSMEbrood.R")                # Brood Collection Summary
-  source("../R/weekly_broodstock_progress.R")   # Broodstock Progress Table
-} else {
-  # Running from root directory (Shiny app)
   source("R/local_cuyem_functions.R")           # Local cuyem functions
   source("R/sumGRSMEdisp.R")                    # FINS Disposition Summary
   source("R/sumGRSMEbrood.R")                   # Brood Collection Summary
   source("R/weekly_broodstock_progress.R")   # Broodstock Progress Table
-}
+
 
 # ---- Load Yearly Estimates ----
-load_yearly_estimates <- function(year, path = NULL) {
-  
-  # Determine correct path based on working directory if not specified
-  if (is.null(path)) {
-    if (basename(getwd()) == "documents") {
-      path <- "../data/yearly_estimates.csv"
-    } else {
-      path <- "data/yearly_estimates.csv"
-    }
-  }
+# ---- Load Yearly Estimates ----
+load_yearly_estimates <- function(year, path = "data/yearly_estimates.csv") {
   
   read_csv(path, show_col_types = FALSE) |>
     filter(year == !!year) |>
@@ -532,20 +514,7 @@ prepare_megadf <- function(trap.year, grsme_df, weir_data_clean) {
 
 # ---- Generate Plot ----
 generate_lrw_megaplot <- function(megadf,
-                                  lrw_catch,
-                                  save_plot = FALSE,
-                                  output_path = NULL) {
-  
-  # Determine correct output path based on working directory if not specified
-  if (is.null(output_path)) {
-    if (basename(getwd()) == "documents") {
-      # Running from documents/ folder (Quarto)
-      output_path <- "../LRW_megaplot.jpg"
-    } else {
-      # Running from root directory (Shiny app)
-      output_path <- "LRW_megaplot.jpg"
-    }
-  }
+                                  lrw_catch) {
   
   # ---- Compute Y-Axis Max ---
   plot_max_df <- lrw_catch |>
@@ -639,18 +608,6 @@ generate_lrw_megaplot <- function(megadf,
       strip.text = element_text(size = 14, face = "bold")
     )
   
-  # ---- Optionally Save Plot ---
-  if (save_plot) {
-    ggsave(
-      filename = output_path,
-      plot = p,
-      device = "jpeg",
-      width = 10,
-      height = 7,
-      units = "in"
-    )
-  }
-  
   # ---- Return Plot Object ---
   attr(p, "scale_factor") <- scale_factor
   attr(p, "plot_max") <- plot_max
@@ -699,100 +656,4 @@ prepare_caption_plot <- function(trap_year) {
     "(cubic feet per second) and daily captures of hatchery- and natural-origin adult Chinook salmon ",
     "at the Lostine River Weir. Discharge recorded at USGS station 1333000 located upstream of the town of Lostine."
   )
-}
-
-# ---- Function to safely create flextable or show no-data message ----
-safe_flextable <- function(data, trap_year, table_type = "hatchery") {
-  
-  # Check if data exists and has rows
-  is_empty_data <- is.null(data) || nrow(data) == 0
-  
-  # If we have data, check if it's meaningful (not all zeros)
-  if (!is_empty_data && nrow(data) > 0) {
-    
-    # For disposition tables, check if all numeric data is zeros
-    if (table_type %in% c("hatchery", "natural")) {
-      # Look for columns that should contain counts (columns 2-6 based on your table structure)
-      count_cols <- data[, 2:ncol(data), drop = FALSE]
-      
-      # Extract just the numbers from each cell (in case they're formatted like "0 (0)")
-      numeric_values <- c()
-      for (i in 1:nrow(count_cols)) {
-        for (j in 1:ncol(count_cols)) {
-          cell_value <- as.character(count_cols[i, j])
-          # Extract all numbers from the cell (handles "0 (0)" format)
-          numbers <- as.numeric(unlist(regmatches(cell_value, gregexpr("\\d+", cell_value))))
-          numeric_values <- c(numeric_values, numbers)
-        }
-      }
-      
-      # Remove NAs and check if all remaining values are zero
-      numeric_values <- numeric_values[!is.na(numeric_values)]
-      is_all_zeros <- length(numeric_values) > 0 && all(numeric_values == 0)
-      is_empty_data <- is_all_zeros
-    }
-    
-    # For broodstock table, check if it's just empty/placeholder data
-    if (table_type == "broodstock") {
-      # Check if all cells are empty, NA, or contain only zeros
-      all_cells <- unlist(data)
-      non_empty_cells <- all_cells[!is.na(all_cells) & all_cells != "" & all_cells != " "]
-      
-      # Extract numbers from non-empty cells
-      numeric_values <- c()
-      for (cell in non_empty_cells) {
-        numbers <- as.numeric(unlist(regmatches(as.character(cell), gregexpr("\\d+", as.character(cell)))))
-        numeric_values <- c(numeric_values, numbers[!is.na(numbers)])
-      }
-      
-      is_empty_data <- length(numeric_values) == 0 || all(numeric_values == 0)
-    }
-  }
-  
-  if (is_empty_data) {
-    # Create appropriate no-data message based on table type
-    if (table_type == "hatchery") {
-      message <- paste0("There is currently no data available for the capture of hatchery-origin Chinook for ", trap_year, ".")
-    } else if (table_type == "natural") {
-      message <- paste0("There is currently no data available for the capture of natural-origin Chinook for ", trap_year, ".")
-    } else if (table_type == "broodstock") {
-      message <- paste0("There is currently no broodstock collection data available for ", trap_year, ".")
-    } else {
-      message <- paste0("There is currently no data available for ", trap_year, ".")
-    }
-    
-    # Return a simple flextable with the message
-    no_data_df <- data.frame(Message = message)
-    return(
-      flextable(no_data_df) |>
-        delete_part(part = "header") |>
-        align(align = "center", part = "all") |>
-        fontsize(size = 11, part = "all") |>
-        italic(part = "all") |>
-        set_table_properties(layout = "autofit", width = 0.95)
-    )
-  } else {
-    # Data exists, create normal flextable
-    if (table_type == "hatchery" || table_type == "natural") {
-      return(
-        flextable(
-          data,
-          cwidth = c(1.3, 0.7, 0.7, 0.7, 1.2, 1.2)
-        ) |>
-          align(j = 2:6, align = "right", part = "all") |>
-          hline(i = nrow(data) - 1) |>
-          set_table_properties(layout = "autofit", width = 0.95)
-      )
-    } else if (table_type == "broodstock") {
-      return(
-        flextable(
-          data,
-          cwidth = c(1, 1.5, 1.5, 1.2)
-        ) |>
-          align(j = 2:4, align = "right", part = "all") |>
-          hline(i = nrow(data) - 1) |>
-          set_table_properties(layout = "autofit", width = 0.95)
-      )
-    }
-  }
 }

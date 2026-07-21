@@ -495,8 +495,7 @@ server <- function(input, output, session) {
   output$megaplot <- renderPlotly({
     plot <- generate_lrw_megaplot(
       megadf = mega_data$lrw_megadf,
-      lrw_catch = mega_data$lrw_megadf |> filter(facet == as.character(current_year)),
-      save_plot = FALSE
+      lrw_catch = mega_data$lrw_megadf |> filter(facet == as.character(current_year))
     )
     
     scale_factor <- attr(plot, "scale_factor")
