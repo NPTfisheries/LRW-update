@@ -503,7 +503,32 @@ server <- function(input, output, session) {
     plot_max <- attr(plot, "plot_max")
     
     p <- ggplotly(plot, tooltip = "text") |>
-      layout(showlegend = TRUE, margin = list(r = 90))
+      layout(
+        showlegend = TRUE,
+        margin = list(r = 90),  # extra right margin so the secondary discharge
+        # axis title/ticks aren't clipped by the widget edge
+        dragmode = FALSE,       # disables click-and-drag rectangle zoom on the
+        # plot area itself (separate from the modebar
+        # zoom buttons, which are removed below)
+        hovermode = "x"         # "Compare data on hover" — shows all traces at
+        # the same x-value together, instead of only
+        # the single closest point ("closest" default)
+      ) |>
+      plotly::config(              # plotly::-qualified to avoid colliding with
+        # httr::config(), which is also loaded
+        displaylogo = FALSE,       # hides the Plotly logo/link button
+        modeBarButtonsToRemove = c(
+          "select2d",         # Box Select tool
+          "lasso2d",          # Lasso Select tool
+          "autoScale2d",      # "Autoscale" button
+          "toggleSpikelines", # hover spike-line toggle
+          "zoom2d",           # drag-to-zoom rectangle tool
+          "pan2d",            # Pan tool
+          "resetScale2d",     # "Reset axes" home icon
+          "zoomIn2d",         # Zoom In (+) button
+          "zoomOut2d"         # Zoom Out (−) button
+        )
+      )
     
     # Clean up legend trace names — ggplotly combines fill + color aesthetics
     # into "(value,color)" format (e.g. "(Hatchery,black)"). This loop renames
