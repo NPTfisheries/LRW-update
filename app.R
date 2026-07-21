@@ -21,14 +21,15 @@ current_year <- as.numeric(format(Sys.Date(), "%Y"))
 # Enhanced UI section for app.R
 
 ui <- dashboardPage(
-  dashboardHeader(title = "Lostine River Weir - Chinook Summary"),
+  dashboardHeader(title = NULL),
   
   dashboardSidebar(
+    collapsed = TRUE, # NEW: sidebar starts hidden/collapsed
     h4(paste("Current Year:", current_year), style = "color: white; text-align: center; margin: 20px 0;"),
     
     br(), br(),
     div(style = "margin: 20px 10px;",
-        p("Last Data Update:", style = "font-size: 12px; color: gray; margin-bottom: 5px;"),
+        p("Last Data Update:", style = "font-size: 15px; color: gray; margin-bottom: 5px;"),
         textOutput("last_update", inline = TRUE)
     ),
     
@@ -36,10 +37,10 @@ ui <- dashboardPage(
     
     # Contact Information Section
     div(style = "margin: 20px 10px; padding: 15px; background-color: rgba(255,255,255,0.1); border-radius: 5px;",
-        h5("Contact Information", style = "color: white; text-align: center; margin-bottom: 15px; font-weight: bold;"),
+        h5("Contact Information", style = "color: white; text-align: center; margin-bottom: 15px; font-weight: bold; font-size: 16px;"),
         
-        div(style = "color: white; font-size: 11px; line-height: 1.4; margin-bottom: 15px;",
-            p(strong("Neal Espinosa"), style = "margin: 0; font-size: 12px;"),
+        div(class = "sidebar-contact-text", style = "color: white; line-height: 1.4; margin-bottom: 15px;",
+            p(strong("Neal Espinosa"), class = "sidebar-contact-name", style = "margin: 0;"),
             p("Northeast Oregon Natural and Hatchery Salmonid Monitoring", style = "margin: 2px 0;"),
             p("Biologist II", style = "margin: 2px 0;"),
             p("541-432-2502", style = "margin: 2px 0;"),
@@ -47,8 +48,8 @@ ui <- dashboardPage(
                 style = "color: #87CEEB; text-decoration: none;"), style = "margin: 2px 0;")
         ),
         
-        div(style = "color: white; font-size: 11px; line-height: 1.4; margin-bottom: 15px;",
-            p(strong("Brian Simmons"), style = "margin: 0; font-size: 12px;"),
+        div(class = "sidebar-contact-text", style = "color: white; line-height: 1.4; margin-bottom: 15px;",
+            p(strong("Brian Simmons"), class = "sidebar-contact-name", style = "margin: 0;"),
             p("Northeast Oregon Natural and Hatchery Salmonid Monitoring", style = "margin: 2px 0;"),
             p("Project Leader", style = "margin: 2px 0;"),
             p("541-432-2515", style = "margin: 2px 0;"),
@@ -56,8 +57,8 @@ ui <- dashboardPage(
                 style = "color: #87CEEB; text-decoration: none;"), style = "margin: 2px 0;")
         ),
         
-        div(style = "color: white; font-size: 11px; line-height: 1.4; text-align: center; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 10px;",
-            p(strong("Nez Perce Tribe"), style = "margin: 2px 0; font-size: 12px;"),
+        div(class = "sidebar-contact-text", style = "color: white; line-height: 1.4; text-align: center; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 10px;",
+            p(strong("Nez Perce Tribe"), class = "sidebar-contact-name", style = "margin: 2px 0;"),
             p("Joseph Field Office", style = "margin: 2px 0;"),
             p("500 North Main Street", style = "margin: 2px 0;"),
             p("P.O. Box 909", style = "margin: 2px 0;"),
@@ -70,77 +71,111 @@ ui <- dashboardPage(
     # Enhanced CSS to match PDF styling
     tags$head(
       tags$style(HTML("
-        .main-header .navbar {
-          background-color: #2c3e50 !important;
-        }
-        .content-wrapper {
-          background-color: #ecf0f1;
-        }
-        .box {
-          border-top-color: #2c3e50;
-        }
-        .no-data-message {
-          font-style: italic;
-          text-align: center;
-          padding: 20px;
-          background-color: #f8f9fa;
-          border: 1px solid #dee2e6;
-          border-radius: 5px;
-          margin: 10px 0;
-        }
-        #last_update {
-          font-size: 12px;
-          color: white;
-        }
-        .npt-header {
-          background-color: white;
-          padding: 20px;
-          margin-bottom: 20px;
-          border-radius: 5px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .npt-logo-side {
-          max-height: 120px;
-          width: auto;
-          margin: 0 15px;
-        }
-        .header-title {
-          color: #2c3e50;
-          font-weight: bold;
-          margin: 0;
-          text-align: center;
-        }
-        .header-subtitle {
-          color: #34495e;
-          margin: 5px 0 0 0;
-          text-align: center;
-          font-style: italic;
-        }
-        .disposition-box .box-header {
-          background-color: #3498db;
-          color: white;
-        }
-        .table-box .box-header {
-          background-color: #5bc0de;
-          color: white;
-        }
-        .plot-box .box-header {
-          background-color: #5cb85c;
-          color: white;
-        }
-        .river-box .box-header {
-          background-color: #f0ad4e;
-          color: white;
-        }
-        /* Make disposition summary text more readable */
-        .disposition-summary ul {
-          font-size: 14px;
-          line-height: 1.6;
-        }
-        .disposition-summary li {
-          margin-bottom: 8px;
-        }
-      "))
+      .main-header .navbar {
+        background-color: #2c3e50 !important;
+      }
+      .main-header .logo {
+        background-color: #2c3e50 !important;   /* NEW: match the navbar now that title is empty */
+      }
+      .content-wrapper {
+        background-color: #ecf0f1;
+        font-size: 18px;
+      }
+      .box {
+        border-top-color: #2c3e50;
+      }
+      .box-title {
+        font-size: 24px;      /* was 20px — section headers (blue bars) */
+        font-weight: 600;
+      }
+      .no-data-message {
+        font-style: italic;
+        text-align: center;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        margin: 10px 0;
+        font-size: 18px;
+      }
+      #last_update {
+        font-size: 16px;
+        color: white;
+      }
+      .npt-header {
+        background-color: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .npt-logo-side {
+        max-height: 120px;
+        width: auto;
+        margin: 0 15px;
+      }
+      .header-title {
+        color: #2c3e50;
+        font-weight: bold;
+        margin: 0;
+        text-align: center;
+      }
+      .header-subtitle {
+        color: #34495e;
+        margin: 5px 0 0 0;
+        text-align: center;
+        font-style: italic;
+        font-size: 22px;      /* was 20px — the date line under the main title */
+      }
+      .disposition-box .box-header {
+        background-color: #3498db;
+        color: white;
+      }
+      .table-box .box-header {
+        background-color: #5bc0de;
+        color: white;
+      }
+      .plot-box .box-header {
+        background-color: #5cb85c;
+        color: white;
+      }
+      .river-box .box-header {
+        background-color: #f0ad4e;
+        color: white;
+      }
+      /* Make disposition summary text more readable */
+      .disposition-summary ul {
+        font-size: 20px;
+        line-height: 1.6;
+      }
+      .disposition-summary li {
+        margin-bottom: 8px;
+      }
+      /* Table captions */
+      .table-caption {
+        font-size: 18px !important;   /* was 16px — the italic caption lines */
+      }
+      /* DT tables: Hatchery/Natural/Broodstock/Weekly Broodstock */
+      table.dataTable {
+        font-size: 18px !important;
+      }
+      table.dataTable th {
+        font-size: 18px !important;
+      }
+      /* NEW: Center-align headers for Hatchery, Natural, and Weekly Trapping/Broodstock tables */
+      #hatchery_table table.dataTable thead th,
+      #natural_table table.dataTable thead th,
+      #broodstock_table table.dataTable thead th {
+        text-align: center !important;
+      }
+      /* Sidebar contact info */
+      .sidebar-contact-name {
+        font-size: 16px !important;
+      }
+      .sidebar-contact-text {
+        font-size: 15px !important;
+      }
+    "))
     ),
     
     fluidRow(
@@ -190,7 +225,7 @@ ui <- dashboardPage(
                  box(width = 12, title = "Hatchery Chinook Disposition", 
                      status = "info", solidHeader = TRUE,
                      # Add caption above table
-                     div(style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #5bc0de; font-size: 12px; font-style: italic;",
+                     div(class = "table-caption", style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #5bc0de; font-style: italic;",
                          textOutput("caption_table1")
                      ),
                      htmlOutput("hatchery_table")
@@ -202,7 +237,7 @@ ui <- dashboardPage(
                  box(width = 12, title = "Natural Chinook Disposition", 
                      status = "info", solidHeader = TRUE,
                      # Add caption above table
-                     div(style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #5bc0de; font-size: 12px; font-style: italic;",
+                     div(class = "table-caption", style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #5bc0de; font-style: italic;",
                          textOutput("caption_table2")
                      ),
                      htmlOutput("natural_table")
@@ -218,7 +253,7 @@ ui <- dashboardPage(
                  box(width = 12, title = "Weekly Trapping & Broodstock Collection Summary", 
                      status = "info", solidHeader = TRUE,
                      # Add caption above table
-                     div(style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #5bc0de; font-size: 12px; font-style: italic;",
+                     div(class = "table-caption", style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #5bc0de; font-style: italic;",
                          textOutput("caption_table3")
                      ),
                      htmlOutput("broodstock_table")
@@ -233,7 +268,7 @@ ui <- dashboardPage(
              div(class = "table-box",
                  box(width = 12, title = "Weekly Broodstock Collection Progress",
                      status = "info", solidHeader = TRUE,
-                     div(style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #5bc0de; font-size: 12px; font-style: italic;",
+                     div(class = "table-caption", style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #5bc0de; font-style: italic;",
                          textOutput("caption_weekly_broodstock")
                      ),
                      DT::DTOutput("weekly_broodstock_table")
@@ -250,7 +285,7 @@ ui <- dashboardPage(
                      status = "success", solidHeader = TRUE,
                      plotlyOutput("megaplot", height = "600px"),
                      # Add caption below plot
-                     div(style = "margin-top: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #5cb85c; font-size: 12px; font-style: italic;",
+                     div(class = "table-caption", style = "margin-top: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #5cb85c; font-style: italic;",
                          textOutput("caption_plot")
                      )
                  )
