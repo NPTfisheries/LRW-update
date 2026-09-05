@@ -5130,3 +5130,14 @@
 [INFO] 2026-09-04 07:22:42 UTC (2026-09-04 00:22:42 PT) -   Date range: 10/10/2023 to 9/9/2025
 [INFO] 2026-09-04 07:22:42 UTC (2026-09-04 00:22:42 PT) -   Total records: 21233
 [INFO] 2026-09-04 07:22:42 UTC (2026-09-04 00:22:42 PT) - Download completed successfully
+[INFO] 2026-09-05 07:04:38 UTC (2026-09-05 00:04:38 PT) - Starting nightly FINS data download
+[INFO] 2026-09-05 07:04:38 UTC (2026-09-05 00:04:38 PT) - API key found
+[INFO] 2026-09-05 07:04:38 UTC (2026-09-05 00:04:38 PT) - Current PT time: 2026-09-05 00:04:38
+[INFO] 2026-09-05 07:04:38 UTC (2026-09-05 00:04:38 PT) - Requesting ALL historical trapping data through 09/05/2026 for NPT GRSME Program only
+[INFO] 2026-09-05 07:05:09 UTC (2026-09-05 00:05:09 PT) - Downloaded 21238 rows of data
+[INFO] 2026-09-05 07:05:09 UTC (2026-09-05 00:05:09 PT) - Columns: Finalize, Verify, Follow-Up, Trapped Date, Is Import, Facility, Trap, Trap Is Offsite, Trapping Session Name, Target Species, Target Run, Trapping Session Comments, Fish ID, Count, Species, Run, Sex, Origin, Origin Expression, Origin Description, Origin Start Date, Origin End Date, Origin Creator, Origin Creation Date, Living Status, Length, Age Designation, Age Calculated, Age Criteria Start Length, Age Criteria End Length, Age Criteria Start Date, Age Criteria End Date, Moved To Facility, Moved To, Moved To Location Type, Moved To Is Offsite, Offsite Owner Facility, Offsite Location Latitude, Offsite Location Longitude, Offsite Location Description, Disposition, Release Site, Release Site Latitude, Release Site Longitude, Purpose, Existing Marks, Existing Marks Quantity, Applied Marks, Applied Marks Quantity, Existing Tags, Applied Tags, Existing CWT, Existing CWT Value, Applied CWT, Applied CWT Value, Existing PIT, Applied PIT, Samples, Conditions, Recap, Injected, Weight, Notes, Group Notes, Import Custom
+[INFO] 2026-09-05 07:05:10 UTC (2026-09-05 00:05:10 PT) - Successfully saved file: data/TrappingData.csv - Size: 12216342 bytes
+[INFO] 2026-09-05 07:05:10 UTC (2026-09-05 00:05:10 PT) - Data summary:
+[INFO] 2026-09-05 07:05:10 UTC (2026-09-05 00:05:10 PT) -   Date range: 10/10/2023 to 9/9/2025
+[INFO] 2026-09-05 07:05:10 UTC (2026-09-05 00:05:10 PT) -   Total records: 21238
+[INFO] 2026-09-05 07:05:10 UTC (2026-09-05 00:05:10 PT) - Download completed successfully
